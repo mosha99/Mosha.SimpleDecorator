@@ -10,14 +10,16 @@ public class Invoker
 
     private List<object> _Parameters;
 
-    public object[] parameter => _Parameters?.ToArray();
+    public object[] Parameter => _Parameters?.ToArray();
     public Invoker SetArg(object arg)
     {
-        var x = (int)arg;
         _Parameters = _Parameters ?? new List<object>();
         this._Parameters.Add(arg);
         return this;
     }
+
+    public T GetParameter<T>(int  index) where T : class { return _Parameters[index] as T; }
+    public MethodInfo GetTargetMethod() => method;
 
     public static Invoker Create(object t, string s)
     {
@@ -32,9 +34,10 @@ public class Invoker
 
     }
 
-    public static object CreateObject(string typeName)
+    public static object CreateObject(Type typeName)
     {
-        return Activator.CreateInstance(Type.GetType(typeName));
+        //var type = Type.GetType(typeName);
+        return Activator.CreateInstance(typeName);
     }
 
 
@@ -45,6 +48,11 @@ public class Invoker
         return targeMethodInfo.Invoke(input, parameter);
     }
 
-
+    public object Run(object input)
+    {
+        MethodInfo targeMethodInfo = input.GetType().GetMethod(method.Name, method.GetParameters().Select(x => x.ParameterType).ToArray());
+        if (targeMethodInfo == null) throw new Exception("method not find");
+        return targeMethodInfo.Invoke(input, Parameter);
+    }
 
 }

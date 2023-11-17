@@ -1,17 +1,38 @@
 ﻿using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
 
-public class ProxyGenerator<Y> where Y : IInseptor
+public class ProxyGenerator
 {
-    public T Generate<T>(object target) where T : class
+    public T Generate<T,Y>(object target) 
+        where T : class
+        where Y : IInseptor,new()
     {
         var type = GenerateProxyType<T, Y>();
 
-        var t = Activator.CreateInstance(type, target);
+        var i = Activator.CreateInstance(typeof(Y));
+
+        var t = Activator.CreateInstance(type, target, i);
 
         return t as T;
 
     }
+    public T Generate<T, Y>(object target, IServiceProvider serviceProvider)
+        where T : class 
+        where Y : IInseptor
+    {
+        var type = GenerateProxyType<T, Y>();
+
+        var i = ActivatorUtilities.CreateInstance(serviceProvider, typeof(Y));
+
+        var t = ActivatorUtilities.CreateInstance(serviceProvider, type, target, i);
+
+        return t as T;
+
+    }
+
+
 
     Type GenerateProxyType<T, Y>()
     {
@@ -40,14 +61,14 @@ public class ProxyGenerator<Y> where Y : IInseptor
                 new[]
                 {
                     typeof(object),
+                    typeof(Y),
                 });
 
         var ilGenerator = tb.GetILGenerator();
 
 
         ilGenerator.Emit(OpCodes.Ldarg_0);
-        ilGenerator.Emit(OpCodes.Ldstr, typeof(Y).FullName);
-        ilGenerator.Emit(OpCodes.Call, typeof(Invoker).GetMethod("CreateObject", new Type[] { typeof(string) }));
+        ilGenerator.Emit(OpCodes.Ldarg_2);
         ilGenerator.Emit(OpCodes.Stfld, inseptor);
 
 
