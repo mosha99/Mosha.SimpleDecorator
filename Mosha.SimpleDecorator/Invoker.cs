@@ -17,7 +17,7 @@ public class Invoker
         this._Parameters.Add(arg);
         return this;
     }
-
+    public object GetParameter(int  index) { return _Parameters[index]; }
     public T GetParameter<T>(int  index) where T : class { return _Parameters[index] as T; }
     public MethodInfo GetTargetMethod() => method;
 

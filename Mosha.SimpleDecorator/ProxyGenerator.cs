@@ -60,24 +60,26 @@ public class ProxyGenerator
                 CallingConventions.Standard,
                 new[]
                 {
-                    typeof(object),
-                    typeof(Y),
+                    typeof(object), // arg 1
+                    typeof(Y), // arg 2
                 });
 
         var ilGenerator = tb.GetILGenerator();
 
 
-        ilGenerator.Emit(OpCodes.Ldarg_0);
-        ilGenerator.Emit(OpCodes.Ldarg_2);
-        ilGenerator.Emit(OpCodes.Stfld, inseptor);
+        ilGenerator.Emit(OpCodes.Ldarg_0);              // load this 
+        ilGenerator.Emit(OpCodes.Ldarg_2);             // load arg 2
+        ilGenerator.Emit(OpCodes.Stfld, inseptor);    // arg 2 => inseptor Field
+                                                           //
+        ilGenerator.Emit(OpCodes.Ldarg_0);          // load this
+        ilGenerator.Emit(OpCodes.Ldfld, inseptor); // load inseptor Field
 
+        ilGenerator.Emit(OpCodes.Ldarg_1); 
 
-        ilGenerator.Emit(OpCodes.Ldarg_0);
-        ilGenerator.Emit(OpCodes.Ldfld, inseptor);
-        ilGenerator.Emit(OpCodes.Ldarg_1);
         ilGenerator.Emit(OpCodes.Call, typeof(IInseptor).GetMethod("SetModel"));
 
-
+        //  this.__inseptor.SetModel( arg_1 );
+         
         ilGenerator.Emit(OpCodes.Ret);
 
 
